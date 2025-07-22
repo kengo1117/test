@@ -10,11 +10,10 @@
       font-family: sans-serif;
       margin: 0;
       padding: 1rem;
-      background-color: #000;
-      background-image: url("2c27fbe0abdc180bee05c3ac419ca11c.jpg");
-      background-repeat: repeat;
-      background-size: contain;
-      background-attachment: fixed;
+      background: radial-gradient(circle at 20% 30%, #ff4dc1, transparent 50%),
+                  radial-gradient(circle at 80% 40%, #4dffdc, transparent 50%),
+                  radial-gradient(circle at 50% 70%, #ffd94d, transparent 50%),
+                  linear-gradient(to bottom right, #1e1e1e, #2e2e2e);
     }
     .container {
       max-width: 600px;
@@ -119,59 +118,112 @@
 </div>
 
 <script>
-const abbreviationMap = {
+let data = [];
+let sortOrder = {};
+let nameMap = {
   "スシ": "スプラシューター",
   "スシコラ": "スプラシューターコラボ",
-  "ヒッセン": "ヒッセン",
-  "ボトル": "ボトルガイザー",
-  "わかば": "わかばシューター",
+  "ローラー": "スプラローラー",
+  "若葉": "わかばシューター",
   "もみじ": "もみじシューター",
-  "シャプマ": "シャープマーカー",
-  "黒ザップ": "N-ZAP85",
-  "赤ザップ": "N-ZAP89",
-  "ホクサイ": "ホクサイ",
-  "パブロ": "パブロ",
-  "ロンブラ": "ロングブラスター",
-  "ラピブラ": "ラピッドブラスター",
-  "スプチャ": "スプラチャージャー",
-  "リッター": "リッター4K",
-  "竹": "14式竹筒銃・甲",
-  "スピナー": "バレルスピナー",
-  "ジム": "ジムワイパー",
-  "フィン": "フィンセント",
-  "クゲ": "クーゲルシュライバー",
+  "ホッブラ": "ホットブラスター",
+  "ロング": "ロングブラスター",
+  "ノヴァ": "ノヴァブラスター",
   "デュアル": "デュアルスイーパー",
-  "ケルビン": "ケルビン525"
+  "プライム": "プライムシューター",
+  "シャプマ": "シャープマーカー",
+  "ジェッスイ": "ジェットスイーパー",
+  "H3": "H3リールガン",
+  "L3": "L3リールガン",
+  "ボトル": "ボトルガイザー",
+  "ラピブラ": "ラピッドブラスター",
+  "バケツ": "バケットスロッシャー",
+  "ヒッセン": "ヒッセン",
+  "スロッシャー": "バケットスロッシャー",
+  "リッター": "リッター4K",
+  "4K": "リッター4K",
+  "チャージャー": "スプラチャージャー",
+  "竹": "14式竹筒銃・甲",
+  "スクイックリン": "スクイックリンα",
+  "スパッタリー": "スパッタリー",
+  "クアッド": "クアッドホッパー",
+  "マニュ": "スプラマニューバー",
+  "スプチャ": "スプラチャージャー",
+  "スシキラ": "スプラシューター煌",
+  "スシ煌": "スプラシューター煌",
+  "スプラシューターキラ": "スプラシューター煌"
 };
 
-function normalizeWeaponName(name) {
-  return abbreviationMap[name.trim()] || name.trim();
+function normalizeName(name) {
+  return nameMap[name] || name;
+}
+
+window.onload = function() {
+  const saved = localStorage.getItem("winrateHistory");
+  if (saved) {
+    data = JSON.parse(saved);
+    renderCharts();
+    renderRanking();
+    renderHistory();
+  }
+  // 初期選択状態をハイライト
+  document.getElementById("winBtn").classList.add("selected");
+};
+
+function toHalfWidthNumber(str) {
+  return str.replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+}
+
+function saveData() {
+  localStorage.setItem("winrateHistory", JSON.stringify(data));
+}
+
+function clearData() {
+  if (confirm("すべてのデータを削除しますか？")) {
+    data = [];
+    localStorage.removeItem("winrateHistory");
+    renderCharts();
+    renderRanking();
+    renderHistory();
+  }
 }
 
 function setResult(value) {
   document.getElementById("result").value = value;
-  document.getElementById("winBtn").classList.remove("selected");
-  document.getElementById("loseBtn").classList.remove("selected");
+  const winBtn = document.getElementById("winBtn");
+  const loseBtn = document.getElementById("loseBtn");
   if (value === "勝ち") {
-    document.getElementById("winBtn").classList.add("selected");
+    winBtn.classList.add("selected");
+    loseBtn.classList.remove("selected");
   } else {
-    document.getElementById("loseBtn").classList.add("selected");
+    winBtn.classList.remove("selected");
+    loseBtn.classList.add("selected");
   }
 }
 
 function addData() {
-  const rawName = document.getElementById("weaponName").value;
-  const weapon = normalizeWeaponName(rawName);
+  const rawName = document.getElementById("weaponName").value.trim();
+  const name = normalizeName(rawName);
   const type = document.getElementById("weaponType").value;
   const rule = document.getElementById("battleRule").value;
   const result = document.getElementById("result").value;
-  const kills = document.getElementById("kills").value;
-  const deaths = document.getElementById("deaths").value;
+  const kills = parseInt(toHalfWidthNumber(document.getElementById("kills").value)) || 0;
+  const deaths = parseInt(toHalfWidthNumber(document.getElementById("deaths").value)) || 0;
+  const date = new Date().toLocaleString();
 
-  // データ処理ロジック（省略）
-  alert(`${weapon} (${type}) - ${rule} - ${result} - ${kills}k/${deaths}d`);
+  if (!name) return;
+
+  data.push({ name, type, rule, result, kills, deaths, date });
+
+  // 武器名は保持、他の入力だけリセット
+  document.getElementById("kills").value = "";
+  document.getElementById("deaths").value = "";
+
+  saveData();
+  renderCharts();
+  renderRanking();
+  renderHistory();
 }
 </script>
 </body>
 </html>
-
