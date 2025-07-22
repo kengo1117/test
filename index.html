@@ -11,9 +11,9 @@
       margin: 0;
       padding: 1rem;
       background-color: #000;
-      background-image: url("/mnt/data/2c27fbe0abdc180bee05c3ac419ca11c.jpg");
+      background-image: url("2c27fbe0abdc180bee05c3ac419ca11c.jpg");
       background-repeat: repeat;
-      background-size: cover;
+      background-size: contain;
       background-attachment: fixed;
     }
     .container {
@@ -119,7 +119,59 @@
 </div>
 
 <script>
-// JavaScript部分はそのまま
+const abbreviationMap = {
+  "スシ": "スプラシューター",
+  "スシコラ": "スプラシューターコラボ",
+  "ヒッセン": "ヒッセン",
+  "ボトル": "ボトルガイザー",
+  "わかば": "わかばシューター",
+  "もみじ": "もみじシューター",
+  "シャプマ": "シャープマーカー",
+  "黒ザップ": "N-ZAP85",
+  "赤ザップ": "N-ZAP89",
+  "ホクサイ": "ホクサイ",
+  "パブロ": "パブロ",
+  "ロンブラ": "ロングブラスター",
+  "ラピブラ": "ラピッドブラスター",
+  "スプチャ": "スプラチャージャー",
+  "リッター": "リッター4K",
+  "竹": "14式竹筒銃・甲",
+  "スピナー": "バレルスピナー",
+  "ジム": "ジムワイパー",
+  "フィン": "フィンセント",
+  "クゲ": "クーゲルシュライバー",
+  "デュアル": "デュアルスイーパー",
+  "ケルビン": "ケルビン525"
+};
+
+function normalizeWeaponName(name) {
+  return abbreviationMap[name.trim()] || name.trim();
+}
+
+function setResult(value) {
+  document.getElementById("result").value = value;
+  document.getElementById("winBtn").classList.remove("selected");
+  document.getElementById("loseBtn").classList.remove("selected");
+  if (value === "勝ち") {
+    document.getElementById("winBtn").classList.add("selected");
+  } else {
+    document.getElementById("loseBtn").classList.add("selected");
+  }
+}
+
+function addData() {
+  const rawName = document.getElementById("weaponName").value;
+  const weapon = normalizeWeaponName(rawName);
+  const type = document.getElementById("weaponType").value;
+  const rule = document.getElementById("battleRule").value;
+  const result = document.getElementById("result").value;
+  const kills = document.getElementById("kills").value;
+  const deaths = document.getElementById("deaths").value;
+
+  // データ処理ロジック（省略）
+  alert(`${weapon} (${type}) - ${rule} - ${result} - ${kills}k/${deaths}d`);
+}
 </script>
 </body>
 </html>
+
